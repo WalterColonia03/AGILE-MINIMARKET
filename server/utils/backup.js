@@ -5,8 +5,12 @@ const { Categoria, Producto, Proveedor, Usuario, Cliente, Venta, DetalleVenta, M
 
 const backupDir = path.join(__dirname, '..', 'backups');
 
-if (!fs.existsSync(backupDir)) {
-  fs.mkdirSync(backupDir, { recursive: true });
+try {
+  if (!fs.existsSync(backupDir)) {
+    fs.mkdirSync(backupDir, { recursive: true });
+  }
+} catch (e) {
+  console.warn('[Backup] Entorno de solo lectura detectado. Las operaciones de backup en disco fallarán.');
 }
 
 // Retener 7 dias
