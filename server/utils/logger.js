@@ -1,13 +1,19 @@
 const fs = require('fs');
 const path = require('path');
 
+const isVercel = !!process.env.VERCEL;
 const logDir = path.join(__dirname, '..', 'logs');
-
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir, { recursive: true });
-}
-
 const logFile = path.join(logDir, 'system.log');
+
+if (!isVercel) {
+  if (!fs.existsSync(logDir)) {
+    try {
+      fs.mkdirSync(logDir, { recursive: true });
+    } catch (e) {
+      console.warn('No se pudo crear directorio de logs locales');
+    }
+  }
+}
 
 const log = (level, message, meta = {}) => {
   const timestamp = new Date().toISOString();
@@ -35,11 +41,13 @@ const log = (level, message, meta = {}) => {
     console.log(logLine.trim());
   }
 
-  // Guardar en archivo
-  try {
-    fs.appendFileSync(logFile, logLine);
-  } catch (err) {
-    console.error('No se pudo escribir en el archivo de log:', err);
+  // Guardar en archivo (solo en desarrollo/local)
+  if (!isVercel) {
+    try {
+      fs.appendFileSync(logFile, logLine);
+    } catch (err) {
+      console.error('No se pudo escribir en el archivo de log:', err);
+    }
   }
 };
 
