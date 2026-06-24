@@ -1,18 +1,18 @@
 const fs = require('fs');
 const path = require('path');
 
-const isVercel = !!process.env.VERCEL;
 const logDir = path.join(__dirname, '..', 'logs');
 const logFile = path.join(logDir, 'system.log');
 
-if (!isVercel) {
+let canWriteToFile = true;
+
+try {
   if (!fs.existsSync(logDir)) {
-    try {
-      fs.mkdirSync(logDir, { recursive: true });
-    } catch (e) {
-      console.warn('No se pudo crear directorio de logs locales');
-    }
+    fs.mkdirSync(logDir, { recursive: true });
   }
+} catch (e) {
+  canWriteToFile = false;
+  console.warn('[Logger] Entorno de solo lectura detectado. Logs de archivo deshabilitados.');
 }
 
 const log = (level, message, meta = {}) => {
@@ -20,7 +20,6 @@ const log = (level, message, meta = {}) => {
   let metaStr = '';
   try {
     if (meta && Object.keys(meta).length > 0) {
-      // Evitar serializar objetos gigantes como requests completos
       const safeMeta = { ...meta };
       if (safeMeta.req) safeMeta.req = undefined;
       if (safeMeta.res) safeMeta.res = undefined;
@@ -32,7 +31,6 @@ const log = (level, message, meta = {}) => {
   
   const logLine = `[${timestamp}] [${level.toUpperCase()}] ${message}${metaStr}\n`;
   
-  // Imprimir por consola para desarrollo
   if (level === 'error') {
     console.error(logLine.trim());
   } else if (level === 'warn') {
@@ -41,12 +39,12 @@ const log = (level, message, meta = {}) => {
     console.log(logLine.trim());
   }
 
-  // Guardar en archivo (solo en desarrollo/local)
-  if (!isVercel) {
+  if (canWriteToFile) {
     try {
       fs.appendFileSync(logFile, logLine);
     } catch (err) {
-      console.error('No se pudo escribir en el archivo de log:', err);
+      // Si falla en tiempo de ejecución (ej. permisos), no hacemos crash
+      canWriteToFile = false; 
     }
   }
 };
