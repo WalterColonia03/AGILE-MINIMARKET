@@ -10,7 +10,8 @@ const { verificarToken, verificarRol } = require('../middlewares/auth.middleware
 
 const router = Router();
 const multer = require('multer');
-const upload = multer({ dest: 'uploads/' });
+const os = require('os');
+const upload = multer({ dest: os.tmpdir() });
 
 // Todas las rutas de este módulo requieren autenticación
 router.use(verificarToken);
