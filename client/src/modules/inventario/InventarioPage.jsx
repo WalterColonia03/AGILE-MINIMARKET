@@ -50,8 +50,11 @@ export default function InventarioPage() {
         api.get('/inventario/entradas'),
         api.get('/inventario/bajas'),
       ]);
-      setProductos(Array.isArray(rP.data) ? rP.data : []);
-      setProveedores(Array.isArray(rProv.data) ? rProv.data : []);
+      const prodData = rP.data;
+      setProductos(Array.isArray(prodData) ? prodData : (prodData.data && Array.isArray(prodData.data) ? prodData.data : []));
+      
+      const provData = rProv.data;
+      setProveedores(Array.isArray(provData) ? provData : (provData.data && Array.isArray(provData.data) ? provData.data : []));
       setEntradas(Array.isArray(rE.data) ? rE.data : []);
       setBajas(Array.isArray(rB.data) ? rB.data : []);
     } catch (err) {
@@ -139,7 +142,8 @@ export default function InventarioPage() {
         api.get('/productos/activos'),
         api.get('/inventario/entradas'),
       ]);
-      setProductos(Array.isArray(rP.data) ? rP.data : []);
+      const prodData = rP.data;
+      setProductos(Array.isArray(prodData) ? prodData : (prodData.data && Array.isArray(prodData.data) ? prodData.data : []));
       setEntradas(Array.isArray(rE.data) ? rE.data : []);
     } catch (err) {
       mostrarError(err.response?.data?.mensaje || err.response?.data?.message || 'Error al registrar entrada');
@@ -168,7 +172,8 @@ export default function InventarioPage() {
         api.get('/productos/activos'),
         api.get('/inventario/bajas'),
       ]);
-      setProductos(Array.isArray(rP.data) ? rP.data : []);
+      const prodData = rP.data;
+      setProductos(Array.isArray(prodData) ? prodData : (prodData.data && Array.isArray(prodData.data) ? prodData.data : []));
       setBajas(Array.isArray(rB.data) ? rB.data : []);
     } catch (err) {
       mostrarError(err.response?.data?.mensaje || err.response?.data?.message || 'Error al registrar baja');

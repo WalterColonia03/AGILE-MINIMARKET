@@ -268,7 +268,8 @@ export default function VentasPage() {
 
   const cargarProductos = () => {
     api.get('/productos/activos').then(({ data }) => {
-      setProductos(Array.isArray(data) ? data : []);
+      const lista = Array.isArray(data) ? data : (data.data && Array.isArray(data.data) ? data.data : []);
+      setProductos(lista);
     }).catch((err) => {
       setError(err.response?.data?.mensaje || 'Error al cargar productos');
     });
