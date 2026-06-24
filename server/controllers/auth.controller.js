@@ -4,6 +4,7 @@ const jwt    = require('jsonwebtoken');
 const { Usuario, LogAcceso } = require('../models');
 const { presentarLogin }     = require('../presenters/auth.presenter');
 const { enviarCorreo } = require('../services/mail.service');
+const logger = require('../utils/logger');
 
 const JWT_SECRET     = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
@@ -14,13 +15,17 @@ const login = async (req, res) => {
 
     const usuario = await Usuario.findOne({ where: { email, activo: true } });
     if (!usuario) {
+      logger.warn('Fallo de login: Usuario no encontrado o inactivo', { email });
       return res.status(401).json({ mensaje: 'Credenciales incorrectas' });
     }
 
     const passwordValida = await bcrypt.compare(password, usuario.password_hash);
     if (!passwordValida) {
+      logger.warn('Fallo de login: Contraseña incorrecta', { email });
       return res.status(401).json({ mensaje: 'Credenciales incorrectas' });
     }
+    
+    logger.info('Login exitoso', { email, rol: usuario.rol });
 
     const token = jwt.sign(
       { id: usuario.id, rol: usuario.rol },
@@ -37,7 +42,7 @@ const login = async (req, res) => {
 
     return res.status(200).json(presentarLogin(token, usuario));
   } catch (err) {
-    console.error('Error en login:', err);
+    logger.error('Error en login:', { error: err.message, stack: err.stack });
     return res.status(500).json({ mensaje: 'Error interno del servidor' });
   }
 };

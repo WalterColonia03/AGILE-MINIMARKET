@@ -20,8 +20,15 @@ const backupRoutes      = require('./routes/backup.routes');
 // ─── Importar seeders ─────────────────────────────────────────────────────────
 const seedAdmin = require('./seeders/adminSeed');
 const { initCron } = require('./utils/backup');
+const logger = require('./utils/logger');
 
 const app = express();
+
+// ─── Logging Middleware ────────────────────────────────────────────────────────
+app.use((req, res, next) => {
+  logger.info(`[${req.method}] ${req.url}`);
+  next();
+});
 
 // ─── Middlewares globales ─────────────────────────────────────────────────────
 app.use(cors());
@@ -51,7 +58,7 @@ app.get('/', (req, res) => {
 
 // ─── Global Error Handler (Centralizado) ──────────────────────────────────────
 app.use((err, req, res, next) => {
-  console.error('Unhandled Error:', err);
+  logger.error(`Unhandled Error en ${req.method} ${req.url}: ${err.message}`, { stack: err.stack });
   res.status(err.status || 500).json({
     mensaje: err.mensaje || 'Error interno del servidor',
     error: process.env.NODE_ENV === 'development' ? err.message : undefined
